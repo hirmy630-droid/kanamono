@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>金物割付 - KYOWA ROOF</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* iOS Dark Mode Theme */
+        :root {
+            --ios-bg: #000000;
+            --ios-card: #1c1c1e;
+            --ios-input: #2c2c2e;
+            --ios-border: #38383a;
+            --ios-blue: #0a84ff;
+            --ios-green: #30d158;
+            --ios-orange: #ff9f0a;
+            --ios-secondary: #8e8e93;
+            --ios-light-gray: #d1d1d6; 
+        }
+
+        body {
+            background-color: var(--ios-bg);
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 0.875rem; 
+            -webkit-tap-highlight-color: transparent;
+            touch-action: pan-y;
+        }
+
+        /* --- 立体的なタブデザイン --- */
+        .tab-container {
+            background: linear-gradient(180deg, #161618 0%, #2c2c2e 100%);
+            padding: 3px;
+            border-radius: 12px;
+            display: flex;
+            margin-bottom: 20px;
+            border: 1px solid #38383a;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 10px 0;
+            text-align: center;
+            font-weight: 600;
+            border-radius: 9px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--ios-secondary);
+            border: 1px solid transparent;
+            font-size: 15px; 
+        }
+
+        .tab-button.active {
+            background: linear-gradient(180deg, #636366 0%, #48484a 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+            border-color: #5a5a5e;
+            transform: translateY(-1px);
+        }
+
+        .view-section {
+            display: none;
+        }
+        .view-section.active {
+            display: block;
+        }
+
+        .input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-field-wrapper {
+            position: relative;
+            width: 100%;
+            display: flex;
+            align-items: center;
+        }
+        .input-field {
+            background-color: var(--ios-card);
+            transition: all 0.2s;
+            border: 1px solid var(--ios-border);
+            width: 100%;
+            padding: 0.75rem 1rem; 
+            color: #ffffff;
+        }
+
+        /* 全幅(W)専用：中央揃え */
+        #totalLength {
+            border: 1.5px solid var(--ios-orange);
+            background-color: #0d0d0d; 
+            text-align: center; 
+            padding-right: 1rem; 
+            padding-left: 1rem;
+            font-size: 25px;
+        }
+
+        #totalLength::placeholder {
+            font-size: 21px;
+            opacity: 0.5;
+        }
+
+        .input-field:focus {
+            background-color: var(--ios-input);
+            border-color: var(--ios-blue);
+            box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.15);
+            outline: none;
+        }
+        
+        #totalLength:focus {
+            border-color: var(--ios-orange);
+            box-shadow: 0 0 0 4px rgba(255, 159, 10, 0.15);
+        }
+
+        .input-field::-webkit-outer-spin-button,
+        .input-field::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .result-card {
+            background: var(--ios-card);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 1px solid var(--ios-input);
+            border-left: 6px solid var(--ios-blue);
+        }
+        .result-card-green {
+            border-left-color: var(--ios-green);
+        }
+
+        .unified-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--ios-light-gray) !important;
+            margin-bottom: 0.25rem;
+        }
+
+        .bg-white-card { background-color: var(--ios-card) !important; border: 1px solid var(--ios-input); }
+        .bg-gray-50-header { background-color: var(--ios-input) !important; }
+        
+        .sticky-footer { 
+            background-color: var(--ios-card) !important; 
+            border-top: 2px solid var(--ios-border) !important; 
+        }
+
+        /* 立体的なクリアボタン */
+        .btn-clear-small {
+            background: linear-gradient(180deg, #636366 0%, #3a3a3c 100%);
+            color: white;
+            border: 1px solid #48484a;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-clear-small:active {
+            background: linear-gradient(180deg, #3a3a3c 0%, #2c2c2e 100%);
+            transform: translateY(1px);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* 割付表のサマリーラベル（働き基準位置などと同じ15pxに設定） */
+        .table-summary-label {
+            color: var(--ios-light-gray);
+            font-size: 15px; /* 働き基準位置(15px)と同じサイズに固定 */
+        }
+
+        /* 割付表のボディ背景色（ヘッダーと同じ色） */
+        #detailTableBody {
+            background-color: var(--ios-input);
+        }
+
+        .table-cell {
+            padding: 8px 4px; 
+            border-bottom: 1px solid var(--ios-border);
+        }
+    </style>
+</head>
+<body class="p-4 pb-12">
+    <div id="swipe-container" class="max-w-md mx-auto min-h-screen">
+        <header class="py-4 text-center">
+            <h1 class="text-2xl font-bold text-white leading-tight">金物割付</h1>
+            <div class="text-sm font-bold text-gray-500">KYOWA ROOF</div>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="tab-container">
+            <button id="tab-calc" class="tab-button active" onclick="switchTab('calc')">計算</button>
+            <button id="tab-table" class="tab-button" onclick="switchTab('table')">割付表</button>
+        </div>
+
+        <!-- CALCULATION VIEW -->
+        <div id="view-calc" class="view-section active">
+            <div class="bg-white-card p-4 rounded-2xl mb-4">
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <!-- ラベルの色を入力数字の色と同じ #0a84ff に設定 -->
+                            <label class="block unified-label uppercase tracking-wider !text-[#0a84ff]">働き (＠)</label>
+                            <div class="input-container">
+                                <div class="input-field-wrapper">
+                                    <input type="text" id="pitch" placeholder="ピッチ" 
+                                        inputmode="decimal"
+                                        class="input-field rounded-xl text-[21.5px] font-bold text-[#0a84ff] text-center">
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <!-- ラベルの色を入力数字の色と同じ #30d158 に設定 -->
+                            <label class="block unified-label uppercase tracking-wider !text-[#30d158]">本数 (N)</label>
+                            <div class="input-container">
+                                <div class="input-field-wrapper">
+                                    <input type="text" id="count" placeholder="本数" 
+                                        inputmode="numeric"
+                                        class="input-field rounded-xl text-[21.5px] font-bold text-[#30d158] text-center">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block unified-label uppercase tracking-wider">
+                            全幅 (W)
+                        </label>
+                        <div class="flex gap-2 items-center">
+                            <div class="input-field-wrapper flex-grow">
+                                <input type="text" id="totalLength" placeholder="数値を入力" 
+                                    inputmode="decimal"
+                                    class="input-field rounded-xl font-bold text-white">
+                            </div>
+                            <button onclick="clearAllFields()" class="w-16 h-[52px] btn-clear-small text-white font-bold rounded-xl flex items-center justify-center text-[13px] shrink-0">
+                                クリア
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="results" class="space-y-4">
+                <div class="result-card p-5">
+                    <div class="text-[15px] font-semibold text-[#0a84ff] mb-3 uppercase tracking-wider">働き計算結果</div>
+                    <div class="grid grid-cols-2 gap-4 border-t border-[#38383a] pt-3">
+                        <div>
+                            <div class="unified-label">本数</div>
+                            <div class="flex items-baseline text-[28px] font-bold text-white">
+                                <span id="resQuantity">-</span>
+                                <span id="unitQuantity" class="text-[15px] hidden ml-1">本</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="unified-label">余り合計</div>
+                            <div class="flex items-baseline text-[20px] font-bold text-white">
+                                <span id="resQtyRemainder">-</span>
+                                <span id="unitQtyRem" class="text-[15px] hidden ml-1">㎜</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-card result-card-green p-5">
+                    <div class="text-[15px] font-semibold text-[#30d158] mb-3 uppercase tracking-wider">本数計算結果</div>
+                    <div class="grid grid-cols-2 gap-4 border-t border-[#38383a] pt-3">
+                        <div>
+                            <div class="unified-label">働き幅</div>
+                            <div class="flex items-baseline text-[28px] font-bold text-white">
+                                <span id="resWidth">-</span>
+                                <span id="unitWidth" class="text-[15px] hidden ml-1">㎜</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="unified-label">余り合計</div>
+                            <div class="flex items-baseline text-[20px] font-bold text-white">
+                                <span id="resWidthRemainder">-</span>
+                                <span id="unitWidthRem" class="text-[15px] hidden ml-1">㎜</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLE VIEW -->
+        <div id="view-table" class="view-section">
+            <div class="bg-white-card rounded-2xl overflow-hidden relative">
+                <div class="bg-gray-50-header p-3 border-b border-[#38383a] flex justify-between items-center">
+                    <h2 class="text-base font-bold text-white uppercase tracking-wider">割付墨出し寸法</h2>
+                    <span id="table-badge" class="text-base bg-[#ff9f0a] px-3 py-1 rounded-full font-bold"></span>
+                </div>
+
+                <div class="flex border-b border-[#38383a] bg-[#1c1c1e] py-2">
+                    <div class="flex-1 text-center border-r border-[#38383a]">
+                        <span class="table-summary-label block uppercase font-bold tracking-tighter">働き基準 本数</span>
+                        <div class="flex items-baseline justify-center text-[#0a84ff]">
+                            <span id="table-resQuantity" class="text-[19px] font-bold">-</span>
+                            <span class="text-[15px] ml-0.5">本</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 text-center">
+                        <span class="table-summary-label block uppercase font-bold tracking-tighter">本数基準 働き幅</span>
+                        <div class="flex items-baseline justify-center text-[#30d158]">
+                            <span id="table-resWidth" class="text-[19px] font-bold">-</span>
+                            <span class="text-[15px] ml-0.5">㎜</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-container bg-black">
+                    <table class="w-full text-center border-collapse">
+                        <thead>
+                            <tr class="bg-[#1c1c1e] text-[15px] font-bold uppercase tracking-tighter">
+                                <th class="py-2 px-1 border-r border-[#38383a] w-1/2 text-[#0a84ff]">働き基準位置</th>
+                                <th class="py-2 px-1 w-1/2 text-[#30d158]">本数基準位置</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailTableBody" class="text-lg font-bold">
+                        </tbody>
+                        <tfoot class="sticky-footer">
+                            <tr class="text-[19px] font-bold">
+                                <td class="py-2 px-2 border-r border-[#38383a] text-[#0a84ff]">
+                                    <span class="unified-label block font-normal">働き (＠)</span>
+                                    <span id="footPitch">-</span><span class="text-[15px] ml-1">㎜</span>
+                                </td>
+                                <td class="py-2 px-2 text-[#30d158]">
+                                    <span class="unified-label block font-normal">本数 (N)</span>
+                                    <span id="footCount">-</span><span class="text-[15px] ml-1">本</span>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <p class="text-center text-gray-500 mt-4 text-xs font-medium italic">※寸法は中心(余り/2)からピッチで割付されています</p>
+        </div>
+    </div>
+
+    <script>
+        const totalLengthInput = document.getElementById('totalLength');
+        const pitchInput = document.getElementById('pitch');
+        const countInput = document.getElementById('count');
+
+        const resQuantity = document.getElementById('resQuantity');
+        const resQtyRemainder = document.getElementById('resQtyRemainder');
+        const resWidth = document.getElementById('resWidth');
+        const resWidthRemainder = document.getElementById('resWidthRemainder');
+
+        const tableResQuantity = document.getElementById('table-resQuantity');
+        const tableResWidth = document.getElementById('table-resWidth');
+        
+        const footPitch = document.getElementById('footPitch');
+        const footCount = document.getElementById('footCount');
+
+        const unitQuantity = document.getElementById('unitQuantity');
+        const unitQtyRem = document.getElementById('unitQtyRem');
+        const unitWidth = document.getElementById('unitWidth');
+        const unitWidthRem = document.getElementById('unitWidthRem');
+
+        const detailTableBody = document.getElementById('detailTableBody');
+
+        let currentActiveTab = 'calc';
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        function switchTab(tabName) {
+            currentActiveTab = tabName;
+            document.getElementById('view-calc').classList.remove('active');
+            document.getElementById('view-table').classList.remove('active');
+            document.getElementById('tab-calc').classList.remove('active');
+            document.getElementById('tab-table').classList.remove('active');
+
+            if (tabName === 'calc') {
+                document.getElementById('view-calc').classList.add('active');
+                document.getElementById('tab-calc').classList.add('active');
+            } else {
+                document.getElementById('view-table').classList.add('active');
+                document.getElementById('tab-table').classList.add('active');
+                calculate();
+            }
+            window.scrollTo(0, 0);
+        }
+
+        function initSwipeGestures() {
+            const container = document.body;
+            container.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+            }, { passive: true });
+
+            container.addEventListener('touchend', (e) => {
+                const touchEndX = e.changedTouches[0].screenX;
+                const touchEndY = e.changedTouches[0].screenY;
+                handleGesture(touchStartX, touchEndX, touchStartY, touchEndY);
+            }, { passive: true });
+        }
+
+        function handleGesture(startX, endX, startY, endY) {
+            const threshold = 80;
+            const verticalThreshold = 50;
+            const diffX = startX - endX;
+            const diffY = Math.abs(startY - endY);
+
+            if (diffY > verticalThreshold) return;
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT') return;
+
+            if (diffX > threshold) {
+                if (currentActiveTab === 'calc') switchTab('table');
+            } else if (diffX < -threshold) {
+                if (currentActiveTab === 'table') switchTab('calc');
+            }
+        }
+
+        function formatNumber(num) {
+            if (num === null || isNaN(num)) return "-";
+            return Math.round(num).toLocaleString('ja-JP');
+        }
+
+        function parseValue(val) {
+            if (!val) return NaN;
+            const clean = val.toString().replace(/[^-0-9.]/g, '');
+            return parseFloat(clean);
+        }
+
+        function formatInputDisplay(input) {
+            let num = parseValue(input.value);
+            if (isNaN(num)) {
+                input.value = "";
+                return;
+            }
+            input.value = num.toLocaleString('ja-JP');
+        }
+
+        function saveToStorage() {
+            const data = {
+                totalLength: totalLengthInput.value,
+                pitch: pitchInput.value,
+                count: countInput.value
+            };
+            localStorage.setItem('kanamono_data_tab_v3', JSON.stringify(data));
+        }
+
+        function loadFromStorage() {
+            const saved = localStorage.getItem('kanamono_data_tab_v3');
+            if (saved) {
+                const data = JSON.parse(saved);
+                totalLengthInput.value = data.totalLength || '';
+                pitchInput.value = data.pitch || '';
+                countInput.value = data.count || '';
+                
+                [totalLengthInput, pitchInput, countInput].forEach(input => {
+                    formatInputDisplay(input);
+                });
+                calculate();
+            }
+            initSwipeGestures();
+        }
+
+        function calculate() {
+            const L = parseValue(totalLengthInput.value);
+            const W = parseValue(pitchInput.value);
+            const N = parseValue(countInput.value);
+
+            resQuantity.innerText = "-";
+            resQtyRemainder.innerText = "-";
+            resWidth.innerText = "-";
+            resWidthRemainder.innerText = "-";
+            tableResQuantity.innerText = "-";
+            tableResWidth.innerText = "-";
+            
+            footPitch.innerText = isNaN(W) ? "-" : formatNumber(W);
+            footCount.innerText = isNaN(N) ? "-" : formatNumber(N);
+            
+            unitQuantity.classList.add('hidden');
+            unitQtyRem.classList.add('hidden');
+            unitWidth.classList.add('hidden');
+            unitWidthRem.classList.add('hidden');
+            
+            detailTableBody.innerHTML = '';
+            
+            // 全幅バッジのテキストを更新
+            const displayLength = totalLengthInput.value;
+            document.getElementById('table-badge').innerText = displayLength ? `全幅 ${displayLength}` : '';
+
+            if (isNaN(L)) return;
+
+            let currentQtyRem = null;
+            let currentWidthRem = null;
+            let calculatedWidth = null;
+
+            if (!isNaN(W) && W !== 0) {
+                const qty = Math.floor(L / W) + 1;
+                currentQtyRem = L % W;
+                const formattedQty = formatNumber(qty);
+                resQuantity.innerText = formattedQty;
+                tableResQuantity.innerText = formattedQty;
+                resQtyRemainder.innerText = formatNumber(currentQtyRem);
+                unitQuantity.classList.remove('hidden');
+                unitQtyRem.classList.remove('hidden');
+            }
+
+            if (!isNaN(N) && N !== 0) {
+                if (N > 1) {
+                    calculatedWidth = L / (N - 1);
+                    const formattedWidth = formatNumber(calculatedWidth);
+                    resWidth.innerText = formattedWidth;
+                    tableResWidth.innerText = formattedWidth;
+                    unitWidth.classList.remove('hidden');
+                }
+                currentWidthRem = L % N;
+                resWidthRemainder.innerText = formatNumber(currentWidthRem);
+                unitWidthRem.classList.remove('hidden');
+            }
+
+            generateTable(L, W, currentQtyRem, currentWidthRem, calculatedWidth);
+        }
+
+        function generateTable(totalL, pitchW, qtyRem, widthRem, widthVal) {
+            const listQty = [];
+            const listWidth = [];
+
+            if (pitchW > 0 && qtyRem !== null) {
+                let pos = qtyRem / 2;
+                while (pos <= (totalL + 0.1)) {
+                    listQty.push(pos);
+                    pos += pitchW;
+                }
+            }
+
+            const stepWidth = (widthVal && widthVal > 0) ? widthVal : pitchW;
+            if (stepWidth > 0 && widthRem !== null) {
+                let pos = widthRem / 2;
+                while (pos <= (totalL + 0.1)) {
+                    listWidth.push(pos);
+                    pos += stepWidth;
+                }
+            }
+
+            const maxRows = Math.max(listQty.length, listWidth.length);
+            if (maxRows === 0) return;
+
+            for (let i = 0; i < maxRows; i++) {
+                const tr = document.createElement('tr');
+
+                // 働き基準位置
+                const td1 = document.createElement('td');
+                td1.className = "table-cell border-r border-[#38383a] text-[#0a84ff]";
+                td1.innerText = listQty[i] !== undefined ? formatNumber(listQty[i]) : "-";
+
+                // 本数基準位置
+                const td2 = document.createElement('td');
+                td2.className = "table-cell text-[#30d158]";
+                td2.innerText = listWidth[i] !== undefined ? formatNumber(listWidth[i]) : "-";
+
+                tr.appendChild(td1);
+                tr.appendChild(td2);
+                detailTableBody.appendChild(tr);
+            }
+        }
+
+        function clearSingleField(id) {
+            const input = document.getElementById(id);
+            input.value = '';
+            saveToStorage(); 
+            calculate();
+        }
+
+        function clearAllFields() {
+            [totalLengthInput, pitchInput, countInput].forEach(input => {
+                input.value = '';
+                formatInputDisplay(input);
+            });
+            localStorage.removeItem('kanamono_data_tab_v3'); 
+            calculate();
+        }
+
+        pitchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                totalLengthInput.focus();
+            }
+        });
+
+        countInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                totalLengthInput.focus();
+            }
+        });
+
+        totalLengthInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                totalLengthInput.blur();
+            }
+        });
+
+        [totalLengthInput, pitchInput, countInput].forEach(el => {
+            const selectAll = (e) => {
+                const target = e.target;
+                const val = parseValue(target.value);
+                if (!isNaN(val)) target.value = val;
+                
+                setTimeout(() => {
+                    target.setSelectionRange(0, target.value.length);
+                }, 50);
+            };
+
+            el.addEventListener('focus', selectAll);
+            el.addEventListener('click', selectAll);
+
+            el.addEventListener('input', (e) => {
+                calculate();
+                saveToStorage(); 
+            });
+
+            el.addEventListener('blur', (e) => {
+                formatInputDisplay(e.target);
+            });
+        });
+
+        window.onload = function() {
+            loadFromStorage();
+        };
+    </script>
+</body>
+</html>
