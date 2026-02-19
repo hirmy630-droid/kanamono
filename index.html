@@ -145,7 +145,6 @@
             border-top: 2px solid var(--ios-border) !important; 
         }
 
-        /* 立体的なクリアボタン */
         .btn-clear-small {
             background: linear-gradient(180deg, #636366 0%, #3a3a3c 100%);
             color: white;
@@ -159,13 +158,11 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
 
-        /* 割付表のサマリーラベル（働き基準位置などと同じ15pxに設定） */
         .table-summary-label {
             color: var(--ios-light-gray);
-            font-size: 15px; /* 働き基準位置(15px)と同じサイズに固定 */
+            font-size: 15px;
         }
 
-        /* 割付表のボディ背景色（ヘッダーと同じ色） */
         #detailTableBody {
             background-color: var(--ios-input);
         }
@@ -183,19 +180,16 @@
             <div class="text-sm font-bold text-gray-500">KYOWA ROOF</div>
         </header>
 
-        <!-- Tab Navigation -->
         <div class="tab-container">
             <button id="tab-calc" class="tab-button active" onclick="switchTab('calc')">計算</button>
             <button id="tab-table" class="tab-button" onclick="switchTab('table')">割付表</button>
         </div>
 
-        <!-- CALCULATION VIEW -->
         <div id="view-calc" class="view-section active">
             <div class="bg-white-card p-4 rounded-2xl mb-4">
                 <div class="space-y-3">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <!-- ラベルの色を入力数字の色と同じ #0a84ff に設定 -->
                             <label class="block unified-label uppercase tracking-wider !text-[#0a84ff]">働き (＠)</label>
                             <div class="input-container">
                                 <div class="input-field-wrapper">
@@ -206,7 +200,6 @@
                             </div>
                         </div>
                         <div>
-                            <!-- ラベルの色を入力数字の色と同じ #30d158 に設定 -->
                             <label class="block unified-label uppercase tracking-wider !text-[#30d158]">本数 (N)</label>
                             <div class="input-container">
                                 <div class="input-field-wrapper">
@@ -279,7 +272,6 @@
             </div>
         </div>
 
-        <!-- TABLE VIEW -->
         <div id="view-table" class="view-section">
             <div class="bg-white-card rounded-2xl overflow-hidden relative">
                 <div class="bg-gray-50-header p-3 border-b border-[#38383a] flex justify-between items-center">
@@ -475,7 +467,6 @@
             
             detailTableBody.innerHTML = '';
             
-            // 全幅バッジのテキストを更新
             const displayLength = totalLengthInput.value;
             document.getElementById('table-badge').innerText = displayLength ? `全幅 ${displayLength}` : '';
 
@@ -483,11 +474,17 @@
 
             let currentQtyRem = null;
             let currentWidthRem = null;
-            let calculatedWidth = null;
+            let displayWidthVal = null; 
 
+            // 働き基準の計算
             if (!isNaN(W) && W !== 0) {
                 const qty = Math.floor(L / W) + 1;
-                currentQtyRem = L % W;
+                // 余り = 全幅 - (ピッチ × 間隔数)
+                currentQtyRem = L - (W * (qty - 1));
+                
+                // 安全策：マイナスにならないようにガード（基本的にはならない）
+                if (currentQtyRem < 0) currentQtyRem = 0;
+
                 const formattedQty = formatNumber(qty);
                 resQuantity.innerText = formattedQty;
                 tableResQuantity.innerText = formattedQty;
@@ -496,40 +493,60 @@
                 unitQtyRem.classList.remove('hidden');
             }
 
+            // 本数基準の計算
             if (!isNaN(N) && N !== 0) {
                 if (N > 1) {
-                    calculatedWidth = L / (N - 1);
-                    const formattedWidth = formatNumber(calculatedWidth);
-                    resWidth.innerText = formattedWidth;
-                    tableResWidth.innerText = formattedWidth;
+                    const rawWidth = L / (N - 1);
+                    // 修正：必ず全幅の範囲内に収まるよう「切捨て」を使用
+                    displayWidthVal = Math.floor(rawWidth); 
+                    
+                    resWidth.innerText = formatNumber(displayWidthVal);
+                    tableResWidth.innerText = formatNumber(displayWidthVal);
                     unitWidth.classList.remove('hidden');
+
+                    // 余り = 全幅 - (切捨てたピッチ × 間隔数)
+                    currentWidthRem = L - (displayWidthVal * (N - 1));
+                } else {
+                    currentWidthRem = L;
+                    displayWidthVal = 0;
                 }
-                currentWidthRem = L % N;
+                
                 resWidthRemainder.innerText = formatNumber(currentWidthRem);
                 unitWidthRem.classList.remove('hidden');
             }
 
-            generateTable(L, W, currentQtyRem, currentWidthRem, calculatedWidth);
+            generateTable(L, W, currentQtyRem, currentWidthRem, displayWidthVal);
         }
 
         function generateTable(totalL, pitchW, qtyRem, widthRem, widthVal) {
             const listQty = [];
             const listWidth = [];
 
-            if (pitchW > 0 && qtyRem !== null) {
+            // 働き基準位置のリスト
+            if (pitchW > 0 && qtyRem !== null && qtyRem >= 0) {
                 let pos = qtyRem / 2;
-                while (pos <= (totalL + 0.1)) {
-                    listQty.push(pos);
+                const qty = Math.floor(totalL / pitchW) + 1;
+                for (let i = 0; i < qty; i++) {
+                    // 全幅の範囲内(誤差0.1mm許容)のみリストに追加
+                    if (pos >= -0.1 && pos <= totalL + 0.1) {
+                        listQty.push(Math.max(0, pos));
+                    }
                     pos += pitchW;
                 }
             }
 
-            const stepWidth = (widthVal && widthVal > 0) ? widthVal : pitchW;
-            if (stepWidth > 0 && widthRem !== null) {
+            // 本数基準位置のリスト
+            if (widthVal !== null && widthRem !== null && widthRem >= 0) {
                 let pos = widthRem / 2;
-                while (pos <= (totalL + 0.1)) {
-                    listWidth.push(pos);
-                    pos += stepWidth;
+                const count = parseValue(countInput.value);
+                if (!isNaN(count)) {
+                    for (let i = 0; i < count; i++) {
+                        // 全幅の範囲内のみリストに追加
+                        if (pos >= -0.1 && pos <= totalL + 0.1) {
+                            listWidth.push(Math.max(0, pos));
+                        }
+                        pos += widthVal;
+                    }
                 }
             }
 
@@ -539,12 +556,10 @@
             for (let i = 0; i < maxRows; i++) {
                 const tr = document.createElement('tr');
 
-                // 働き基準位置
                 const td1 = document.createElement('td');
                 td1.className = "table-cell border-r border-[#38383a] text-[#0a84ff]";
                 td1.innerText = listQty[i] !== undefined ? formatNumber(listQty[i]) : "-";
 
-                // 本数基準位置
                 const td2 = document.createElement('td');
                 td2.className = "table-cell text-[#30d158]";
                 td2.innerText = listWidth[i] !== undefined ? formatNumber(listWidth[i]) : "-";
@@ -553,13 +568,6 @@
                 tr.appendChild(td2);
                 detailTableBody.appendChild(tr);
             }
-        }
-
-        function clearSingleField(id) {
-            const input = document.getElementById(id);
-            input.value = '';
-            saveToStorage(); 
-            calculate();
         }
 
         function clearAllFields() {
