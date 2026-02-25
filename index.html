@@ -36,7 +36,7 @@
             overflow-x: hidden;
         }
 
-        /* 3D立体タブ - 高さを小さく調整 */
+        /* 3D立体タブ */
         .tab-wrapper {
             position: sticky;
             top: 0;
@@ -91,10 +91,10 @@
             flex-grow: 1;
         }
 
-        /* 計算結果パネル */
+        /* 計算結果パネル - 縦幅をさらに小さく (64px -> 60px) */
         .result-stack { padding: 10px; }
         .result-box {
-            height: 64px;
+            height: 60px;
             padding: 0 16px;
             display: flex;
             align-items: center;
@@ -108,8 +108,9 @@
         .result-box-blue { background: rgba(10, 132, 255, 0.15); border-color: var(--ios-blue); }
         .result-box-green { background: rgba(48, 209, 88, 0.15); border-color: var(--ios-green); }
 
+        /* 結果のメイン数値をさらに1ポイント縮小 (38px -> 37px) */
         .result-value {
-            font-size: 39px; 
+            font-size: 37px; 
             font-weight: 900;
             color: #ffffff;
             display: flex;
@@ -419,7 +420,6 @@
             inputs.pitch = '';
             inputs.count = '';
         } else if (key === 'backspace') {
-            // Cキー化されたが、もし内部的に使いたい場合の保険
             inputs[focusedInputId] = inputs[focusedInputId].toString().slice(0, -1);
         } else if (key === 'enter') {
             handleEnter();
