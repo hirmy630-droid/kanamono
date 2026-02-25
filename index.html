@@ -4,629 +4,588 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>金物割付 - KYOWA ROOF</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
     <style>
-        /* iOS Dark Mode Theme */
         :root {
             --ios-bg: #000000;
             --ios-card: #1c1c1e;
-            --ios-input: #2c2c2e;
-            --ios-border: #38383a;
+            --ios-border: #333333;
+            --ios-orange: #ff9f0a;
             --ios-blue: #0a84ff;
             --ios-green: #30d158;
-            --ios-orange: #ff9f0a;
-            --ios-secondary: #8e8e93;
-            --ios-light-gray: #d1d1d6; 
+            --ios-silver: #c7c7cc;
+            --ios-silver-dark: #9a9a9e;
+            --label-gray: #b0b0b5;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: var(--ios-bg);
+            margin: 0;
+            background: var(--ios-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
             color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            font-size: 0.875rem; 
-            -webkit-tap-highlight-color: transparent;
-            touch-action: pan-y;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* --- 立体的なタブデザイン --- */
-        .tab-container {
-            background: linear-gradient(180deg, #161618 0%, #2c2c2e 100%);
-            padding: 3px;
-            border-radius: 12px;
+        /* 3D立体タブ - 高さを小さく調整 */
+        .tab-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 6px 12px;
             display: flex;
-            margin-bottom: 20px;
-            border: 1px solid #38383a;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid #222;
+        }
+
+        .tab-container {
+            display: flex;
+            background: #2c2c2e;
+            width: 100%;
+            max-width: 420px;
+            padding: 2px;
+            border-radius: 12px;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.05);
+            border: 1px solid #3a3a3c;
         }
 
         .tab-button {
             flex: 1;
-            padding: 10px 0;
-            text-align: center;
-            font-weight: 600;
-            border-radius: 9px;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            color: var(--ios-secondary);
+            padding: 6px 0;
             border: 1px solid transparent;
-            font-size: 15px; 
+            background: transparent;
+            color: var(--ios-silver-dark);
+            font-size: 14px;
+            font-weight: 800;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 10px;
+            cursor: pointer;
         }
 
         .tab-button.active {
             background: linear-gradient(180deg, #636366 0%, #48484a 100%);
-            color: #ffffff;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
-            border-color: #5a5a5e;
+            color: var(--ios-orange) !important;
+            border: 1px solid #7c7c80;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
             transform: translateY(-1px);
         }
 
-        .view-section {
-            display: none;
-        }
-        .view-section.active {
-            display: block;
+        .main-container {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
         }
 
-        .input-container {
-            position: relative;
+        /* 計算結果パネル */
+        .result-stack { padding: 10px; }
+        .result-box {
+            height: 64px;
+            padding: 0 16px;
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            border: 1.5px solid var(--ios-border);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            margin-bottom: 8px;
         }
-        .input-field-wrapper {
-            position: relative;
-            width: 100%;
-            display: flex;
-            align-items: center;
-        }
-        .input-field {
-            background-color: var(--ios-card);
-            transition: all 0.2s;
-            border: 1px solid var(--ios-border);
-            width: 100%;
-            padding: 0.75rem 1rem; 
+
+        .result-box-blue { background: rgba(10, 132, 255, 0.15); border-color: var(--ios-blue); }
+        .result-box-green { background: rgba(48, 209, 88, 0.15); border-color: var(--ios-green); }
+
+        .result-value {
+            font-size: 39px; 
+            font-weight: 900;
             color: #ffffff;
+            display: flex;
+            align-items: baseline;
+            gap: 2px;
         }
 
-        /* 全幅(W)専用：中央揃え */
-        #totalLength {
-            border: 1.5px solid var(--ios-orange);
-            background-color: #0d0d0d; 
-            text-align: center; 
-            padding-right: 1rem; 
-            padding-left: 1rem;
-            font-size: 25px;
+        .result-label-left {
+            font-size: 14px;
+            font-weight: 900;
+            color: #ffffff;
+            text-align: left;
+            line-height: 1.3;
+            text-transform: uppercase;
         }
 
-        #totalLength::placeholder {
-            font-size: 21px;
-            opacity: 0.5;
+        .unit-text {
+            font-size: 16px;
+            font-weight: 800;
+            color: #ffffff;
+            opacity: 0.6;
+            margin-left: 2px;
         }
 
-        .input-field:focus {
-            background-color: var(--ios-input);
-            border-color: var(--ios-blue);
-            box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.15);
-            outline: none;
-        }
-        
-        #totalLength:focus {
-            border-color: var(--ios-orange);
-            box-shadow: 0 0 0 4px rgba(255, 159, 10, 0.15);
+        .separator-slash {
+            font-size: 20px;
+            font-weight: 900;
+            opacity: 0.3;
+            margin: 0 6px;
         }
 
-        .input-field::-webkit-outer-spin-button,
-        .input-field::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        .result-card {
-            background: var(--ios-card);
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            border: 1px solid var(--ios-input);
-            border-left: 6px solid var(--ios-blue);
-        }
-        .result-card-green {
-            border-left-color: var(--ios-green);
-        }
-
-        .unified-label {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--ios-light-gray) !important;
-            margin-bottom: 0.25rem;
-        }
-
-        .bg-white-card { background-color: var(--ios-card) !important; border: 1px solid var(--ios-input); }
-        .bg-gray-50-header { background-color: var(--ios-input) !important; }
-        
-        .sticky-footer { 
-            background-color: var(--ios-card) !important; 
-            border-top: 2px solid var(--ios-border) !important; 
-        }
-
-        .btn-clear-small {
-            background: linear-gradient(180deg, #636366 0%, #3a3a3c 100%);
-            color: white;
-            border: 1px solid #48484a;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
-            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .btn-clear-small:active {
-            background: linear-gradient(180deg, #3a3a3c 0%, #2c2c2e 100%);
-            transform: translateY(1px);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.5);
-        }
-
-        .table-summary-label {
-            color: var(--ios-light-gray);
-            font-size: 15px;
-        }
-
-        #detailTableBody {
-            background-color: var(--ios-input);
-        }
-
-        .table-cell {
-            padding: 8px 4px; 
+        /* セル形式入力グリッド */
+        .cell-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            background: var(--ios-border);
+            gap: 1px;
             border-bottom: 1px solid var(--ios-border);
+            border-top: 1px solid var(--ios-border);
         }
+
+        .calc-cell {
+            background: #121214;
+            height: 56px;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            grid-column: span 3;
+        }
+
+        .calc-cell-sm { height: 48px; }
+        .span-6 { grid-column: span 6 !important; }
+
+        .calc-cell.focused {
+            background: #1c1c1e;
+            box-shadow: inset 0 0 0 2px var(--ios-orange);
+            z-index: 10;
+        }
+
+        .input-value {
+            font-size: 26px;
+            font-weight: 900;
+            color: #ffffff;
+            flex: 1;
+            text-align: right;
+        }
+        .input-value-sm { font-size: 24px; }
+
+        .input-label-left {
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--label-gray);
+            margin-right: 4px;
+            white-space: nowrap;
+        }
+
+        /* テンキー */
+        .keypad-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: #000;
+            padding: 1px;
+        }
+
+        .key-btn {
+            background: #1c1c1e;
+            color: white;
+            border: none;
+            height: 64px;
+            font-size: 24px;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.1s;
+        }
+        .key-btn:active { background: #333; }
+        .key-btn.orange { background: var(--ios-orange); font-weight: 900; }
+        .key-btn.gray { background: #2c2c2e; color: var(--label-gray); font-size: 18px; font-weight: 700; }
+
+        /* 割付表表示 */
+        .table-area { padding: 10px; }
+        .table-card {
+            background: var(--ios-card);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--ios-border);
+        }
+        .table-cell {
+            padding: 12px 4px;
+            border-bottom: 1px solid var(--ios-border);
+            font-size: 20px;
+            font-weight: 900;
+            text-align: center;
+        }
+
+        .table-foot-row {
+            background: #2c2c2e;
+            border-top: 2px solid #444;
+        }
+
+        .app-footer-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 12px 8px 12px;
+            font-size: 14px;
+            font-weight: 400;
+            color: #666666;
+            letter-spacing: 0.05em;
+        }
+
+        #toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(59, 130, 246, 0.95);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 16px;
+            opacity: 0;
+            z-index: 1000;
+            transition: 0.3s;
+            pointer-events: none;
+        }
+        #toast.show { opacity: 1; }
+        .hidden { display: none !important; }
     </style>
 </head>
-<body class="p-4 pb-12">
-    <div id="swipe-container" class="max-w-md mx-auto min-h-screen">
-        <header class="py-4 text-center">
-            <h1 class="text-2xl font-bold text-white leading-tight">金物割付</h1>
-            <div class="text-sm font-bold text-gray-500">KYOWA ROOF</div>
-        </header>
+<body>
 
+    <div id="toast">コピーしました</div>
+
+    <!-- 3D立体タブ -->
+    <div class="tab-wrapper">
         <div class="tab-container">
             <button id="tab-calc" class="tab-button active" onclick="switchTab('calc')">計算</button>
             <button id="tab-table" class="tab-button" onclick="switchTab('table')">割付表</button>
         </div>
+    </div>
 
-        <div id="view-calc" class="view-section active">
-            <div class="bg-white-card p-4 rounded-2xl mb-4">
-                <div class="space-y-3">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block unified-label uppercase tracking-wider !text-[#0a84ff]">働き (＠)</label>
-                            <div class="input-container">
-                                <div class="input-field-wrapper">
-                                    <input type="text" id="pitch" placeholder="ピッチ" 
-                                        inputmode="decimal"
-                                        class="input-field rounded-xl text-[21.5px] font-bold text-[#0a84ff] text-center">
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block unified-label uppercase tracking-wider !text-[#30d158]">本数 (N)</label>
-                            <div class="input-container">
-                                <div class="input-field-wrapper">
-                                    <input type="text" id="count" placeholder="本数" 
-                                        inputmode="numeric"
-                                        class="input-field rounded-xl text-[21.5px] font-bold text-[#30d158] text-center">
-                                </div>
-                            </div>
-                        </div>
+    <div class="main-container">
+        <!-- 計算画面 -->
+        <div id="view-calc">
+            <!-- 結果パネル -->
+            <div class="result-stack">
+                <div class="result-box result-box-blue">
+                    <div class="result-label-left text-[#0a84ff]">働き基準<br>本数 / 余</div>
+                    <div class="result-value">
+                        <span id="resQty">-</span><span class="unit-text">本</span>
+                        <span class="separator-slash">/</span>
+                        <span id="resQtyRem" class="text-2xl">-</span><span class="unit-text text-sm">㎜</span>
                     </div>
-
-                    <div>
-                        <label class="block unified-label uppercase tracking-wider">
-                            全幅 (W)
-                        </label>
-                        <div class="flex gap-2 items-center">
-                            <div class="input-field-wrapper flex-grow">
-                                <input type="text" id="totalLength" placeholder="数値を入力" 
-                                    inputmode="decimal"
-                                    class="input-field rounded-xl font-bold text-white">
-                            </div>
-                            <button onclick="clearAllFields()" class="w-16 h-[52px] btn-clear-small text-white font-bold rounded-xl flex items-center justify-center text-[13px] shrink-0">
-                                クリア
-                            </button>
-                        </div>
+                </div>
+                <div class="result-box result-box-green">
+                    <div class="result-label-left text-[#30d158]">本数基準<br>働き / 余</div>
+                    <div class="result-value">
+                        <span id="resWidth">-</span><span class="unit-text text-sm">㎜</span>
+                        <span class="separator-slash">/</span>
+                        <span id="resWidthRem" class="text-2xl">-</span><span class="unit-text text-sm">㎜</span>
                     </div>
                 </div>
             </div>
 
-            <div id="results" class="space-y-4">
-                <div class="result-card p-5">
-                    <div class="text-[15px] font-semibold text-[#0a84ff] mb-3 uppercase tracking-wider">働き計算結果</div>
-                    <div class="grid grid-cols-2 gap-4 border-t border-[#38383a] pt-3">
-                        <div>
-                            <div class="unified-label">本数</div>
-                            <div class="flex items-baseline text-[28px] font-bold text-white">
-                                <span id="resQuantity">-</span>
-                                <span id="unitQuantity" class="text-[15px] hidden ml-1">本</span>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="unified-label">余り合計</div>
-                            <div class="flex items-baseline text-[20px] font-bold text-white">
-                                <span id="resQtyRemainder">-</span>
-                                <span id="unitQtyRem" class="text-[15px] hidden ml-1">㎜</span>
-                            </div>
-                        </div>
-                    </div>
+            <!-- 入力セルグリッド -->
+            <div class="cell-grid">
+                <div class="calc-cell calc-cell-sm" onclick="focusInput('pitch')">
+                    <span class="input-label-left text-[#0a84ff]">働き(@)</span>
+                    <div id="display-pitch" class="input-value input-value-sm text-[#0a84ff]">0</div>
                 </div>
+                <div class="calc-cell calc-cell-sm" onclick="focusInput('count')">
+                    <span class="input-label-left text-[#30d158]">本数(N)</span>
+                    <div id="display-count" class="input-value input-value-sm text-[#30d158]">0</div>
+                </div>
+                <div class="calc-cell span-6 focused" onclick="focusInput('totalLength')">
+                    <span class="input-label-left">全幅 (W)</span>
+                    <div id="display-totalLength" class="input-value">0</div>
+                </div>
+            </div>
 
-                <div class="result-card result-card-green p-5">
-                    <div class="text-[15px] font-semibold text-[#30d158] mb-3 uppercase tracking-wider">本数計算結果</div>
-                    <div class="grid grid-cols-2 gap-4 border-t border-[#38383a] pt-3">
-                        <div>
-                            <div class="unified-label">働き幅</div>
-                            <div class="flex items-baseline text-[28px] font-bold text-white">
-                                <span id="resWidth">-</span>
-                                <span id="unitWidth" class="text-[15px] hidden ml-1">㎜</span>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="unified-label">余り合計</div>
-                            <div class="flex items-baseline text-[20px] font-bold text-white">
-                                <span id="resWidthRemainder">-</span>
-                                <span id="unitWidthRem" class="text-[15px] hidden ml-1">㎜</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- テンキー (⇦をCに変更) -->
+            <div class="keypad-container">
+                <button class="key-btn" onclick="pressKey('7')">7</button>
+                <button class="key-btn" onclick="pressKey('8')">8</button>
+                <button class="key-btn" onclick="pressKey('9')">9</button>
+                <button class="key-btn gray" onclick="pressKey('clearEntry')">C</button>
+                
+                <button class="key-btn" onclick="pressKey('4')">4</button>
+                <button class="key-btn" onclick="pressKey('5')">5</button>
+                <button class="key-btn" onclick="pressKey('6')">6</button>
+                <button class="key-btn gray" onclick="pressKey('clearAll')">AC</button>
+                
+                <button class="key-btn" onclick="pressKey('1')">1</button>
+                <button class="key-btn" onclick="pressKey('2')">2</button>
+                <button class="key-btn" onclick="pressKey('3')">3</button>
+                <button class="key-btn orange row-span-2 h-full" id="enter-btn-label" onclick="pressKey('enter')">⏎</button>
+                
+                <button class="key-btn" onclick="pressKey('0')">0</button>
+                <button class="key-btn" onclick="pressKey('00')">00</button>
+                <button class="key-btn" onclick="pressKey('.')">.</button>
             </div>
         </div>
 
-        <div id="view-table" class="view-section">
-            <div class="bg-white-card rounded-2xl overflow-hidden relative">
-                <div class="bg-gray-50-header p-3 border-b border-[#38383a] flex justify-between items-center">
-                    <h2 class="text-base font-bold text-white uppercase tracking-wider">割付墨出し寸法</h2>
-                    <span id="table-badge" class="text-base bg-[#ff9f0a] px-3 py-1 rounded-full font-bold"></span>
-                </div>
-
-                <div class="flex border-b border-[#38383a] bg-[#1c1c1e] py-2">
-                    <div class="flex-1 text-center border-r border-[#38383a]">
-                        <span class="table-summary-label block uppercase font-bold tracking-tighter">働き基準 本数</span>
-                        <div class="flex items-baseline justify-center text-[#0a84ff]">
-                            <span id="table-resQuantity" class="text-[19px] font-bold">-</span>
-                            <span class="text-[15px] ml-0.5">本</span>
-                        </div>
+        <!-- 割付表画面 -->
+        <div id="view-table" class="hidden">
+            <div class="table-area">
+                <div class="table-card">
+                    <div class="bg-[#2c2c2e] p-3 flex justify-between items-center border-b border-[#444]">
+                        <span class="font-black text-base">全幅: <span id="table-badge-L">-</span>㎜</span>
+                        <span class="text-sm bg-[#ff9f0a] px-2 py-0.5 rounded font-bold text-black shadow-sm">墨出し寸法</span>
                     </div>
-                    <div class="flex-1 text-center">
-                        <span class="table-summary-label block uppercase font-bold tracking-tighter">本数基準 働き幅</span>
-                        <div class="flex items-baseline justify-center text-[#30d158]">
-                            <span id="table-resWidth" class="text-[19px] font-bold">-</span>
-                            <span class="text-[15px] ml-0.5">㎜</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="table-container bg-black">
-                    <table class="w-full text-center border-collapse">
-                        <thead>
-                            <tr class="bg-[#1c1c1e] text-[15px] font-bold uppercase tracking-tighter">
-                                <th class="py-2 px-1 border-r border-[#38383a] w-1/2 text-[#0a84ff]">働き基準位置</th>
-                                <th class="py-2 px-1 w-1/2 text-[#30d158]">本数基準位置</th>
+                    <table class="w-full">
+                        <thead class="shadow-md">
+                            <tr class="bg-[#2c2c2e] text-[14px] text-zinc-400 uppercase font-bold border-b border-[#444]">
+                                <th class="py-3 border-r border-[#444] w-1/2 text-[#0a84ff] tracking-wider">働き基準 (@<span id="th-W">-</span>)</th>
+                                <th class="py-3 w-1/2 text-[#30d158] tracking-wider">本数基準 (N<span id="th-N">-</span>)</th>
                             </tr>
                         </thead>
-                        <tbody id="detailTableBody" class="text-lg font-bold">
-                        </tbody>
-                        <tfoot class="sticky-footer">
-                            <tr class="text-[19px] font-bold">
-                                <td class="py-2 px-2 border-r border-[#38383a] text-[#0a84ff]">
-                                    <span class="unified-label block font-normal">働き (＠)</span>
-                                    <span id="footPitch">-</span><span class="text-[15px] ml-1">㎜</span>
+                        <tbody id="detailTableBody"></tbody>
+                        <tfoot class="table-foot-row shadow-inner">
+                            <tr class="font-bold border-t border-[#444]">
+                                <td class="py-3 border-r border-[#444] text-center text-[#0a84ff]">
+                                    <span class="text-[14px] block opacity-70 font-bold mb-0.5">働き基準 本数</span>
+                                    <span class="text-[18px]"><span id="foot-resQty">-</span>本</span>
                                 </td>
-                                <td class="py-2 px-2 text-[#30d158]">
-                                    <span class="unified-label block font-normal">本数 (N)</span>
-                                    <span id="footCount">-</span><span class="text-[15px] ml-1">本</span>
+                                <td class="py-3 text-center text-[#30d158]">
+                                    <span class="text-[14px] block opacity-70 font-bold mb-0.5">本数基準 働き幅</span>
+                                    <span class="text-[18px]"><span id="foot-resWidth">-</span>㎜</span>
                                 </td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
+                <p class="text-center text-zinc-500 mt-4 text-[14px] italic">※中心(余り/2)からピッチで割付されています</p>
             </div>
-            <p class="text-center text-gray-500 mt-4 text-xs font-medium italic">※寸法は中心(余り/2)からピッチで割付されています</p>
+        </div>
+
+        <!-- フッター -->
+        <div class="app-footer-bar">
+            <span>金物割付電卓</span>
+            <span>KYOWA ROOF</span>
         </div>
     </div>
 
-    <script>
-        const totalLengthInput = document.getElementById('totalLength');
-        const pitchInput = document.getElementById('pitch');
-        const countInput = document.getElementById('count');
+<script>
+    let currentActiveTab = 'calc';
+    let focusedInputId = 'totalLength';
+    const storageKey = 'kanamono_v11_unified';
 
-        const resQuantity = document.getElementById('resQuantity');
-        const resQtyRemainder = document.getElementById('resQtyRemainder');
-        const resWidth = document.getElementById('resWidth');
-        const resWidthRemainder = document.getElementById('resWidthRemainder');
+    const inputs = {
+        totalLength: '',
+        pitch: '',
+        count: ''
+    };
 
-        const tableResQuantity = document.getElementById('table-resQuantity');
-        const tableResWidth = document.getElementById('table-resWidth');
+    function switchTab(tabName) {
+        currentActiveTab = tabName;
+        document.getElementById('view-calc').classList.toggle('hidden', tabName !== 'calc');
+        document.getElementById('view-table').classList.toggle('hidden', tabName !== 'table');
+        document.getElementById('tab-calc').classList.toggle('active', tabName === 'calc');
+        document.getElementById('tab-table').classList.toggle('active', tabName === 'table');
         
-        const footPitch = document.getElementById('footPitch');
-        const footCount = document.getElementById('footCount');
+        if (tabName === 'table') generateTable();
+        window.scrollTo(0, 0);
+    }
 
-        const unitQuantity = document.getElementById('unitQuantity');
-        const unitQtyRem = document.getElementById('unitQtyRem');
-        const unitWidth = document.getElementById('unitWidth');
-        const unitWidthRem = document.getElementById('unitWidthRem');
+    function focusInput(id) {
+        document.querySelectorAll('.calc-cell').forEach(el => el.classList.remove('focused'));
+        const displayEl = document.getElementById(`display-${id}`);
+        if (displayEl) {
+            displayEl.parentElement.classList.add('focused');
+            focusedInputId = id;
+        }
+    }
 
-        const detailTableBody = document.getElementById('detailTableBody');
-
-        let currentActiveTab = 'calc';
-        let touchStartX = 0;
-        let touchStartY = 0;
-
-        function switchTab(tabName) {
-            currentActiveTab = tabName;
-            document.getElementById('view-calc').classList.remove('active');
-            document.getElementById('view-table').classList.remove('active');
-            document.getElementById('tab-calc').classList.remove('active');
-            document.getElementById('tab-table').classList.remove('active');
-
-            if (tabName === 'calc') {
-                document.getElementById('view-calc').classList.add('active');
-                document.getElementById('tab-calc').classList.add('active');
-            } else {
-                document.getElementById('view-table').classList.add('active');
-                document.getElementById('tab-table').classList.add('active');
-                calculate();
+    function pressKey(key) {
+        if (key === 'clearEntry') {
+            inputs[focusedInputId] = '';
+        } else if (key === 'clearAll') {
+            inputs.totalLength = '';
+            inputs.pitch = '';
+            inputs.count = '';
+        } else if (key === 'backspace') {
+            // Cキー化されたが、もし内部的に使いたい場合の保険
+            inputs[focusedInputId] = inputs[focusedInputId].toString().slice(0, -1);
+        } else if (key === 'enter') {
+            handleEnter();
+            return;
+        } else if (key === '.') {
+            if (!inputs[focusedInputId].includes('.')) {
+                inputs[focusedInputId] += (inputs[focusedInputId] === '' ? '0.' : '.');
             }
-            window.scrollTo(0, 0);
+        } else {
+            if (inputs[focusedInputId] === '0') inputs[focusedInputId] = key;
+            else inputs[focusedInputId] += key;
+        }
+        updateDisplay();
+        calculate();
+    }
+
+    function handleEnter() {
+        if (focusedInputId === 'pitch') focusInput('count');
+        else if (focusedInputId === 'count') focusInput('totalLength');
+        else if (focusedInputId === 'totalLength') switchTab('table');
+    }
+
+    function updateDisplay() {
+        for (const key in inputs) {
+            const el = document.getElementById(`display-${key}`);
+            if (el) {
+                if (inputs[key] === '') {
+                    el.innerText = '0';
+                    el.style.opacity = '0.3';
+                } else {
+                    el.innerText = parseFloat(inputs[key]).toLocaleString('ja-JP');
+                    el.style.opacity = '1';
+                }
+            }
+        }
+        saveToStorage();
+    }
+
+    function calculate() {
+        const L = parseFloat(inputs.totalLength);
+        const W = parseFloat(inputs.pitch);
+        const N = parseFloat(inputs.count);
+
+        const resQty = document.getElementById('resQty');
+        const resQtyRem = document.getElementById('resQtyRem');
+        const resWidth = document.getElementById('resWidth');
+        const resWidthRem = document.getElementById('resWidthRem');
+
+        resQty.innerText = "-";
+        resQtyRem.innerText = "-";
+        resWidth.innerText = "-";
+        resWidthRem.innerText = "-";
+
+        if (isNaN(L)) return;
+
+        if (!isNaN(W) && W > 0) {
+            const qty = Math.floor(L / W) + 1;
+            const rem = L - (W * (qty - 1));
+            resQty.innerText = qty.toLocaleString();
+            resQtyRem.innerText = Math.round(rem).toLocaleString();
         }
 
-        function initSwipeGestures() {
-            const container = document.body;
-            container.addEventListener('touchstart', (e) => {
-                touchStartX = e.changedTouches[0].screenX;
-                touchStartY = e.changedTouches[0].screenY;
-            }, { passive: true });
+        if (!isNaN(N) && N > 1) {
+            const pitchVal = Math.floor(L / (N - 1));
+            const rem = L - (pitchVal * (N - 1));
+            resWidth.innerText = pitchVal.toLocaleString();
+            resWidthRem.innerText = Math.round(rem).toLocaleString();
+        }
+    }
 
-            container.addEventListener('touchend', (e) => {
-                const touchEndX = e.changedTouches[0].screenX;
-                const touchEndY = e.changedTouches[0].screenY;
-                handleGesture(touchStartX, touchEndX, touchStartY, touchEndY);
-            }, { passive: true });
+    function generateTable() {
+        const L = parseFloat(inputs.totalLength);
+        const W = parseFloat(inputs.pitch);
+        const N = parseFloat(inputs.count);
+        const tbody = document.getElementById('detailTableBody');
+        tbody.innerHTML = '';
+
+        document.getElementById('table-badge-L').innerText = isNaN(L) ? '-' : L.toLocaleString();
+        document.getElementById('th-W').innerText = isNaN(W) ? '-' : W.toLocaleString();
+        document.getElementById('th-N').innerText = isNaN(N) ? '-' : N.toLocaleString();
+
+        const footQty = document.getElementById('foot-resQty');
+        const footWidth = document.getElementById('foot-resWidth');
+        footQty.innerText = "-";
+        footWidth.innerText = "-";
+
+        if (isNaN(L)) return;
+
+        const listQty = [];
+        const listWidth = [];
+
+        if (!isNaN(W) && W > 0) {
+            const qty = Math.floor(L / W) + 1;
+            const rem = L - (W * (qty - 1));
+            footQty.innerText = qty.toLocaleString();
+            let pos = rem / 2;
+            for (let i = 0; i < qty; i++) {
+                listQty.push(Math.round(pos));
+                pos += W;
+            }
         }
 
-        function handleGesture(startX, endX, startY, endY) {
-            const threshold = 80;
-            const verticalThreshold = 50;
-            const diffX = startX - endX;
-            const diffY = Math.abs(startY - endY);
+        if (!isNaN(N) && N > 1) {
+            const pitchVal = Math.floor(L / (N - 1));
+            const rem = L - (pitchVal * (N - 1));
+            footWidth.innerText = pitchVal.toLocaleString();
+            let pos = rem / 2;
+            for (let i = 0; i < N; i++) {
+                listWidth.push(Math.round(pos));
+                pos += pitchVal;
+            }
+        }
 
-            if (diffY > verticalThreshold) return;
-            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT') return;
+        const maxRows = Math.max(listQty.length, listWidth.length);
+        for (let i = 0; i < maxRows; i++) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="table-cell border-r border-[#333] text-[#0a84ff]">${listQty[i] !== undefined ? listQty[i].toLocaleString() : '-'}</td>
+                <td class="table-cell text-[#30d158]">${listWidth[i] !== undefined ? listWidth[i].toLocaleString() : '-'}</td>
+            `;
+            tbody.appendChild(tr);
+        }
+    }
 
-            if (diffX > threshold) {
+    function saveToStorage() {
+        localStorage.setItem(storageKey, JSON.stringify(inputs));
+    }
+
+    function loadFromStorage() {
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+            const data = JSON.parse(saved);
+            Object.assign(inputs, data);
+            updateDisplay();
+            calculate();
+        }
+    }
+
+    // --- スワイプ操作の実装 ---
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].clientX;
+        touchStartY = e.changedTouches[0].clientY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', e => {
+        if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
+
+        const deltaX = touchStartX - touchEndX;
+        const deltaY = Math.abs(touchStartY - touchEndY);
+
+        if (Math.abs(deltaX) > 80 && deltaY < 100) {
+            if (deltaX > 0) { // 左へスワイプ
                 if (currentActiveTab === 'calc') switchTab('table');
-            } else if (diffX < -threshold) {
+            } else { // 右へスワイプ
                 if (currentActiveTab === 'table') switchTab('calc');
             }
         }
+    }, { passive: true });
 
-        function formatNumber(num) {
-            if (num === null || isNaN(num)) return "-";
-            return Math.round(num).toLocaleString('ja-JP');
-        }
-
-        function parseValue(val) {
-            if (!val) return NaN;
-            const clean = val.toString().replace(/[^-0-9.]/g, '');
-            return parseFloat(clean);
-        }
-
-        function formatInputDisplay(input) {
-            let num = parseValue(input.value);
-            if (isNaN(num)) {
-                input.value = "";
-                return;
-            }
-            input.value = num.toLocaleString('ja-JP');
-        }
-
-        function saveToStorage() {
-            const data = {
-                totalLength: totalLengthInput.value,
-                pitch: pitchInput.value,
-                count: countInput.value
-            };
-            localStorage.setItem('kanamono_data_tab_v3', JSON.stringify(data));
-        }
-
-        function loadFromStorage() {
-            const saved = localStorage.getItem('kanamono_data_tab_v3');
-            if (saved) {
-                const data = JSON.parse(saved);
-                totalLengthInput.value = data.totalLength || '';
-                pitchInput.value = data.pitch || '';
-                countInput.value = data.count || '';
-                
-                [totalLengthInput, pitchInput, countInput].forEach(input => {
-                    formatInputDisplay(input);
-                });
-                calculate();
-            }
-            initSwipeGestures();
-        }
-
-        function calculate() {
-            const L = parseValue(totalLengthInput.value);
-            const W = parseValue(pitchInput.value);
-            const N = parseValue(countInput.value);
-
-            resQuantity.innerText = "-";
-            resQtyRemainder.innerText = "-";
-            resWidth.innerText = "-";
-            resWidthRemainder.innerText = "-";
-            tableResQuantity.innerText = "-";
-            tableResWidth.innerText = "-";
-            
-            footPitch.innerText = isNaN(W) ? "-" : formatNumber(W);
-            footCount.innerText = isNaN(N) ? "-" : formatNumber(N);
-            
-            unitQuantity.classList.add('hidden');
-            unitQtyRem.classList.add('hidden');
-            unitWidth.classList.add('hidden');
-            unitWidthRem.classList.add('hidden');
-            
-            detailTableBody.innerHTML = '';
-            
-            const displayLength = totalLengthInput.value;
-            document.getElementById('table-badge').innerText = displayLength ? `全幅 ${displayLength}` : '';
-
-            if (isNaN(L)) return;
-
-            let currentQtyRem = null;
-            let currentWidthRem = null;
-            let displayWidthVal = null; 
-
-            // 働き基準の計算
-            if (!isNaN(W) && W !== 0) {
-                const qty = Math.floor(L / W) + 1;
-                // 余り = 全幅 - (ピッチ × 間隔数)
-                currentQtyRem = L - (W * (qty - 1));
-                
-                // 安全策：マイナスにならないようにガード（基本的にはならない）
-                if (currentQtyRem < 0) currentQtyRem = 0;
-
-                const formattedQty = formatNumber(qty);
-                resQuantity.innerText = formattedQty;
-                tableResQuantity.innerText = formattedQty;
-                resQtyRemainder.innerText = formatNumber(currentQtyRem);
-                unitQuantity.classList.remove('hidden');
-                unitQtyRem.classList.remove('hidden');
-            }
-
-            // 本数基準の計算
-            if (!isNaN(N) && N !== 0) {
-                if (N > 1) {
-                    const rawWidth = L / (N - 1);
-                    // 修正：必ず全幅の範囲内に収まるよう「切捨て」を使用
-                    displayWidthVal = Math.floor(rawWidth); 
-                    
-                    resWidth.innerText = formatNumber(displayWidthVal);
-                    tableResWidth.innerText = formatNumber(displayWidthVal);
-                    unitWidth.classList.remove('hidden');
-
-                    // 余り = 全幅 - (切捨てたピッチ × 間隔数)
-                    currentWidthRem = L - (displayWidthVal * (N - 1));
-                } else {
-                    currentWidthRem = L;
-                    displayWidthVal = 0;
-                }
-                
-                resWidthRemainder.innerText = formatNumber(currentWidthRem);
-                unitWidthRem.classList.remove('hidden');
-            }
-
-            generateTable(L, W, currentQtyRem, currentWidthRem, displayWidthVal);
-        }
-
-        function generateTable(totalL, pitchW, qtyRem, widthRem, widthVal) {
-            const listQty = [];
-            const listWidth = [];
-
-            // 働き基準位置のリスト
-            if (pitchW > 0 && qtyRem !== null && qtyRem >= 0) {
-                let pos = qtyRem / 2;
-                const qty = Math.floor(totalL / pitchW) + 1;
-                for (let i = 0; i < qty; i++) {
-                    // 全幅の範囲内(誤差0.1mm許容)のみリストに追加
-                    if (pos >= -0.1 && pos <= totalL + 0.1) {
-                        listQty.push(Math.max(0, pos));
-                    }
-                    pos += pitchW;
-                }
-            }
-
-            // 本数基準位置のリスト
-            if (widthVal !== null && widthRem !== null && widthRem >= 0) {
-                let pos = widthRem / 2;
-                const count = parseValue(countInput.value);
-                if (!isNaN(count)) {
-                    for (let i = 0; i < count; i++) {
-                        // 全幅の範囲内のみリストに追加
-                        if (pos >= -0.1 && pos <= totalL + 0.1) {
-                            listWidth.push(Math.max(0, pos));
-                        }
-                        pos += widthVal;
-                    }
-                }
-            }
-
-            const maxRows = Math.max(listQty.length, listWidth.length);
-            if (maxRows === 0) return;
-
-            for (let i = 0; i < maxRows; i++) {
-                const tr = document.createElement('tr');
-
-                const td1 = document.createElement('td');
-                td1.className = "table-cell border-r border-[#38383a] text-[#0a84ff]";
-                td1.innerText = listQty[i] !== undefined ? formatNumber(listQty[i]) : "-";
-
-                const td2 = document.createElement('td');
-                td2.className = "table-cell text-[#30d158]";
-                td2.innerText = listWidth[i] !== undefined ? formatNumber(listWidth[i]) : "-";
-
-                tr.appendChild(td1);
-                tr.appendChild(td2);
-                detailTableBody.appendChild(tr);
-            }
-        }
-
-        function clearAllFields() {
-            [totalLengthInput, pitchInput, countInput].forEach(input => {
-                input.value = '';
-                formatInputDisplay(input);
-            });
-            localStorage.removeItem('kanamono_data_tab_v3'); 
-            calculate();
-        }
-
-        pitchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                totalLengthInput.focus();
-            }
-        });
-
-        countInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                totalLengthInput.focus();
-            }
-        });
-
-        totalLengthInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                totalLengthInput.blur();
-            }
-        });
-
-        [totalLengthInput, pitchInput, countInput].forEach(el => {
-            const selectAll = (e) => {
-                const target = e.target;
-                const val = parseValue(target.value);
-                if (!isNaN(val)) target.value = val;
-                
-                setTimeout(() => {
-                    target.setSelectionRange(0, target.value.length);
-                }, 50);
-            };
-
-            el.addEventListener('focus', selectAll);
-            el.addEventListener('click', selectAll);
-
-            el.addEventListener('input', (e) => {
-                calculate();
-                saveToStorage(); 
-            });
-
-            el.addEventListener('blur', (e) => {
-                formatInputDisplay(e.target);
-            });
-        });
-
-        window.onload = function() {
-            loadFromStorage();
-        };
-    </script>
+    window.onload = loadFromStorage;
+</script>
 </body>
 </html>
