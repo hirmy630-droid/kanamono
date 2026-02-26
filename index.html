@@ -69,7 +69,7 @@
             background: transparent;
             color: var(--ios-silver-dark);
             font-size: 14px;
-            font-weight: 800;
+            font-weight: 600;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 10px;
             cursor: pointer;
@@ -91,7 +91,7 @@
             flex-grow: 1;
         }
 
-        /* 計算結果パネル - 縦幅をさらに小さく (64px -> 60px) */
+        /* 計算結果パネル */
         .result-stack { padding: 10px; }
         .result-box {
             height: 60px;
@@ -108,10 +108,9 @@
         .result-box-blue { background: rgba(10, 132, 255, 0.15); border-color: var(--ios-blue); }
         .result-box-green { background: rgba(48, 209, 88, 0.15); border-color: var(--ios-green); }
 
-        /* 結果のメイン数値をさらに1ポイント縮小 (38px -> 37px) */
         .result-value {
             font-size: 37px; 
-            font-weight: 900;
+            font-weight: 700;
             color: #ffffff;
             display: flex;
             align-items: baseline;
@@ -120,7 +119,7 @@
 
         .result-label-left {
             font-size: 14px;
-            font-weight: 900;
+            font-weight: 700;
             color: #ffffff;
             text-align: left;
             line-height: 1.3;
@@ -129,7 +128,7 @@
 
         .unit-text {
             font-size: 16px;
-            font-weight: 800;
+            font-weight: 400;
             color: #ffffff;
             opacity: 0.6;
             margin-left: 2px;
@@ -137,7 +136,7 @@
 
         .separator-slash {
             font-size: 20px;
-            font-weight: 900;
+            font-weight: 700;
             opacity: 0.3;
             margin: 0 6px;
         }
@@ -174,7 +173,7 @@
 
         .input-value {
             font-size: 26px;
-            font-weight: 900;
+            font-weight: 700;
             color: #ffffff;
             flex: 1;
             text-align: right;
@@ -183,7 +182,7 @@
 
         .input-label-left {
             font-size: 14px;
-            font-weight: 900;
+            font-weight: 700;
             color: var(--label-gray);
             margin-right: 4px;
             white-space: nowrap;
@@ -211,8 +210,8 @@
             transition: background 0.1s;
         }
         .key-btn:active { background: #333; }
-        .key-btn.orange { background: var(--ios-orange); font-weight: 900; }
-        .key-btn.gray { background: #2c2c2e; color: var(--label-gray); font-size: 18px; font-weight: 700; }
+        .key-btn.orange { background: var(--ios-orange); font-weight: 700; }
+        .key-btn.gray { background: #2c2c2e; color: var(--label-gray); font-size: 18px; font-weight: 600; }
 
         /* 割付表表示 */
         .table-area { padding: 10px; }
@@ -226,7 +225,7 @@
             padding: 12px 4px;
             border-bottom: 1px solid var(--ios-border);
             font-size: 20px;
-            font-weight: 900;
+            font-weight: 700;
             text-align: center;
         }
 
@@ -270,7 +269,7 @@
 
     <div id="toast">コピーしました</div>
 
-    <!-- 3D立体タブ -->
+    <!-- タブメニュー -->
     <div class="tab-wrapper">
         <div class="tab-container">
             <button id="tab-calc" class="tab-button active" onclick="switchTab('calc')">計算</button>
@@ -284,7 +283,7 @@
             <!-- 結果パネル -->
             <div class="result-stack">
                 <div class="result-box result-box-blue">
-                    <div class="result-label-left text-[#0a84ff]">働き基準<br>本数 / 余</div>
+                    <div class="result-label-left text-[#0a84ff]">働き計算<br>本数 / 余</div>
                     <div class="result-value">
                         <span id="resQty">-</span><span class="unit-text">本</span>
                         <span class="separator-slash">/</span>
@@ -292,7 +291,7 @@
                     </div>
                 </div>
                 <div class="result-box result-box-green">
-                    <div class="result-label-left text-[#30d158]">本数基準<br>働き / 余</div>
+                    <div class="result-label-left text-[#30d158]">本数計算<br>働き / 余</div>
                     <div class="result-value">
                         <span id="resWidth">-</span><span class="unit-text text-sm">㎜</span>
                         <span class="separator-slash">/</span>
@@ -317,7 +316,7 @@
                 </div>
             </div>
 
-            <!-- テンキー (⇦をCに変更) -->
+            <!-- テンキー -->
             <div class="keypad-container">
                 <button class="key-btn" onclick="pressKey('7')">7</button>
                 <button class="key-btn" onclick="pressKey('8')">8</button>
@@ -336,7 +335,7 @@
                 
                 <button class="key-btn" onclick="pressKey('0')">0</button>
                 <button class="key-btn" onclick="pressKey('00')">00</button>
-                <button class="key-btn" onclick="pressKey('.')">.</button>
+                <button class="key-btn" onclick="pressKey('000')">000</button>
             </div>
         </div>
 
@@ -345,38 +344,37 @@
             <div class="table-area">
                 <div class="table-card">
                     <div class="bg-[#2c2c2e] p-3 flex justify-between items-center border-b border-[#444]">
-                        <span class="font-black text-base">全幅: <span id="table-badge-L">-</span>㎜</span>
+                        <span class="font-bold text-base">全幅: <span id="table-badge-L">-</span>㎜</span>
                         <span class="text-sm bg-[#ff9f0a] px-2 py-0.5 rounded font-bold text-black shadow-sm">墨出し寸法</span>
                     </div>
                     <table class="w-full">
                         <thead class="shadow-md">
-                            <tr class="bg-[#2c2c2e] text-[14px] text-zinc-400 uppercase font-bold border-b border-[#444]">
-                                <th class="py-3 border-r border-[#444] w-1/2 text-[#0a84ff] tracking-wider">働き基準 (@<span id="th-W">-</span>)</th>
-                                <th class="py-3 w-1/2 text-[#30d158] tracking-wider">本数基準 (N<span id="th-N">-</span>)</th>
+                            <tr class="bg-[#2c2c2e] text-[14px] text-zinc-400 font-bold border-b border-[#444]">
+                                <th class="py-3 border-r border-[#444] w-1/2 text-[#0a84ff] tracking-wider">働き計算 (@<span id="th-W">-</span>)</th>
+                                <th class="py-3 w-1/2 text-[#30d158] tracking-wider">本数計算 (N<span id="th-N">-</span>)</th>
                             </tr>
                         </thead>
                         <tbody id="detailTableBody"></tbody>
                         <tfoot class="table-foot-row shadow-inner">
                             <tr class="font-bold border-t border-[#444]">
                                 <td class="py-3 border-r border-[#444] text-center text-[#0a84ff]">
-                                    <span class="text-[14px] block opacity-70 font-bold mb-0.5">働き基準 本数</span>
+                                    <span class="text-[14px] block opacity-70 font-bold mb-0.5">働き計算 本数</span>
                                     <span class="text-[18px]"><span id="foot-resQty">-</span>本</span>
                                 </td>
                                 <td class="py-3 text-center text-[#30d158]">
-                                    <span class="text-[14px] block opacity-70 font-bold mb-0.5">本数基準 働き幅</span>
+                                    <span class="text-[14px] block opacity-70 font-bold mb-0.5">本数計算 働き幅</span>
                                     <span class="text-[18px]"><span id="foot-resWidth">-</span>㎜</span>
                                 </td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
-                <p class="text-center text-zinc-500 mt-4 text-[14px] italic">※中心(余り/2)からピッチで割付されています</p>
             </div>
         </div>
 
         <!-- フッター -->
         <div class="app-footer-bar">
-            <span>金物割付電卓</span>
+            <span>金物割付</span>
             <span>KYOWA ROOF</span>
         </div>
     </div>
@@ -384,6 +382,7 @@
 <script>
     let currentActiveTab = 'calc';
     let focusedInputId = 'totalLength';
+    let isOverwriteMode = true; // 上書きモードフラグ
     const storageKey = 'kanamono_v11_unified';
 
     const inputs = {
@@ -409,28 +408,34 @@
         if (displayEl) {
             displayEl.parentElement.classList.add('focused');
             focusedInputId = id;
+            isOverwriteMode = true; // セル選択時に上書きモードをONにする
         }
     }
 
     function pressKey(key) {
         if (key === 'clearEntry') {
             inputs[focusedInputId] = '';
+            isOverwriteMode = true;
         } else if (key === 'clearAll') {
             inputs.totalLength = '';
             inputs.pitch = '';
             inputs.count = '';
+            isOverwriteMode = true;
         } else if (key === 'backspace') {
             inputs[focusedInputId] = inputs[focusedInputId].toString().slice(0, -1);
+            isOverwriteMode = false;
         } else if (key === 'enter') {
             handleEnter();
             return;
-        } else if (key === '.') {
-            if (!inputs[focusedInputId].includes('.')) {
-                inputs[focusedInputId] += (inputs[focusedInputId] === '' ? '0.' : '.');
-            }
         } else {
-            if (inputs[focusedInputId] === '0') inputs[focusedInputId] = key;
-            else inputs[focusedInputId] += key;
+            // 数値、00、000の入力
+            if (isOverwriteMode) {
+                inputs[focusedInputId] = key; // 上書き
+                isOverwriteMode = false;      // 一度入力したら追加モードへ
+            } else {
+                if (inputs[focusedInputId] === '0') inputs[focusedInputId] = key;
+                else inputs[focusedInputId] += key; // 既存の値に追加
+            }
         }
         updateDisplay();
         calculate();
