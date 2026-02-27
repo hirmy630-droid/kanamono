@@ -37,6 +37,17 @@
             overflow-x: hidden;
         }
 
+        /* ヘッダー */
+        .header-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--ios-border);
+            background: var(--ios-bg);
+        }
+
         /* スリムなタブ */
         .tab-wrapper {
             position: sticky;
@@ -236,17 +247,6 @@
             border-top: 2px solid #444;
         }
 
-        .app-footer-bar {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 16px 12px 40px;
-            font-size: 12px;
-            color: var(--ios-silver);
-            font-weight: 600;
-            opacity: 0.6;
-        }
-
         #toast {
             position: fixed;
             top: 50%;
@@ -271,6 +271,12 @@
     <div id="toast">コピーしました</div>
 
     <div class="main-container">
+        <!-- ヘッダー -->
+        <div class="header-bar">
+            <span style="font-size: 14px; font-weight: bold;">金物割付</span>
+            <span style="font-size: 12px; opacity: 0.8;">KYOWA ROOF</span>
+        </div>
+
         <!-- タブメニュー (スリム化) -->
         <div class="tab-wrapper">
             <div class="tab-container">
@@ -371,12 +377,6 @@
                     </table>
                 </div>
             </div>
-        </div>
-
-        <!-- フッター (シルバー配色) -->
-        <div class="app-footer-bar">
-            <span>金物割付</span>
-            <span>KYOWA ROOF</span>
         </div>
     </div>
 
